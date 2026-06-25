@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Prompt Engineering Studio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
+            background: linear-gradient(135deg, #1e1b4b 0%, #2e1065 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { 
+            font-size: 48px; 
+            font-weight: 800; 
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tagline { font-size: 16px; color: #c4b5fd; font-weight: 500; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: rgba(30, 27, 75, 0.8);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #c4b5fd;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .category-btn {
+            padding: 12px 16px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            color: #c4b5fd;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .category-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.6);
+            transform: translateX(4px);
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+            border-color: transparent;
+            color: white;
+        }
+
+        .tutorial-content {
+            display: none;
+        }
+
+        .tutorial-content.active {
+            display: block;
+        }
+
+        .tutorial-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #c4b5fd;
+            margin-bottom: 16px;
+        }
+
+        .tutorial-desc {
+            color: #a5b4fc;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .prompt-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid #a78bfa;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .prompt-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #a78bfa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .prompt-text {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 6px;
+            padding: 12px;
+            color: #e0e7ff;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            word-break: break-word;
+            white-space: pre-wrap;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .copy-btn, .claude-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .copy-btn {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: #c4b5fd;
+        }
+
+        .copy-btn:hover {
+            background: rgba(99, 102, 241, 0.4);
+            border-color: rgba(99, 102, 241, 0.8);
+        }
+
+        .claude-btn {
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+            color: white;
+            border: none;
+        }
+
+        .claude-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+        }
+
+        .tips-box {
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 16px;
+        }
+
+        .tips-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #d8b4fe;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .tip-item {
+            font-size: 13px;
+            color: #c4b5fd;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+
+        .status-message {
+            font-size: 12px;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .status-message.show { display: block; }
+        .status-message.success { background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4); }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: #93c5fd;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 1024px) {
+            .layout { grid-template-columns: 1fr; }
+            h1 { font-size: 32px; }
+        }
+
+        @media (max-width: 640px) {
+            .panel { padding: 20px; }
+            h1 { font-size: 24px; }
+            .tutorial-title { font-size: 18px; }
+            .button-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Claude Prompt Studio</h1>
+            <p class="tagline">Learn and test prompt engineering techniques</p>
+        </header>
+
+        <div class="layout">
+            <!-- Left: Tutorials -->
+            <div class="panel">
+                <div class="panel-title">📚 How to Use Claude</div>
+                <div class="category-list" id="categoryList"></div>
+            </div>
+
+            <!-- Right: Prompt Display -->
+            <div class="panel">
+                <div class="panel-title">✨ Copy & Test</div>
+
+                <div id="tutorialDisplay"></div>
+
+                <div class="info-box">
+                    💡 <strong>Pro Tip:</strong> Click "Open in Claude" to copy the prompt and jump to Claude.ai. Perfect for live demos!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tutorials = {
+            'Write a Business Plan': {
+                desc: 'Use Claude to draft a structured business plan with market analysis, strategy, and projections.',
+                prompt: `Please create a business plan for an online bicycle rental service for city commuters. Include:
+1. Executive Summary (2-3 paragraphs)
+2. Problem & Opportunity (what problem does it solve?)
+3. Solution (your approach)
+4. Target Market & Size
+5. Revenue Model
+6. Go-to-Market Strategy
+7. Financial Projections (3-year estimate)
+8. Risks & Mitigation
+
+Format as markdown with clear sections.`
+            },
+            'Debug Code': {
+                desc: 'Let Claude analyze code, identify bugs, and suggest fixes with explanations.',
+                prompt: `I have a bug in my JavaScript code for a shopping cart. Please analyze it and explain:
+1. What the bug is
+2. Why it's happening
+3. How to fix it
+4. How to prevent similar bugs
+
+Here's the code:
+\`\`\`javascript
+function calculateTotal(items) {
+  let total = 0;
+  for (let i = 0; i < items.length; i++) {
+    total = total + items[i].price * items[i].quantity;
+  }
+  return total
+}
+
+const cart = [{price: 29.99, quantity: 2}, {price: 15.50, quantity: 1}];
+console.log(calculateTotal(cart)); // Expected: 75.48
+\`\`\`
+
+Assume I'm familiar with programming but new to JavaScript.`
+            },
+            'Analyze Data': {
+                desc: 'Use Claude to interpret data patterns, spot trends, and generate insights.',
+                prompt: `I have sales data from my coffee shop that I need to understand. Please analyze and provide:
+1. Key patterns or trends
+2. Outliers or anomalies
+3. Potential causes or explanations
+4. Actionable insights
+5. Questions to investigate further
+
+Here's my data:
+Sales by day (last 2 weeks): Mon $450, Tue $480, Wed $520, Thu $510, Fri $890, Sat $1200, Sun $950, Mon $420, Tue $460, Wed $490, Thu $515, Fri $920, Sat $1150, Sun $980
+
+Context: This is a coffee shop in downtown Dublin with 4 employees. The shop is open 6am-6pm daily.`
+            },
+            'Create Marketing Copy': {
+                desc: 'Generate compelling marketing messages for your product or service.',
+                prompt: `Write marketing copy for my product. Key details:
+- Product: A smart water bottle that tracks hydration and reminds you to drink water
+- Target audience: Fitness enthusiasts and health-conscious professionals aged 25-45
+- Key benefit: Stay hydrated without thinking about it - the bottle reminds you
+- Unique angle: AI learns your hydration patterns and adjusts reminders based on your activity level
+- Call to action: Start your free 7-day trial today
+
+Please create:
+1. Headline (attention-grabbing)
+2. Subheadline (supporting)
+3. Body copy (3-4 compelling paragraphs)
+4. Call-to-action button text
+
+Tone: professional but friendly, energetic`
+            },
+            'Learn a Topic': {
+                desc: 'Ask Claude to teach you something with explanations at your level.',
+                prompt: `Explain machine learning to me as if I'm a small business owner with no technical background.
+
+I need to understand:
+1. What is it fundamentally?
+2. How does it work?
+3. Why should I care about it for my business?
+4. Common misconceptions
+5. How to get started
+
+Use analogies, examples from real businesses, and clear language. Avoid jargon unless explained.`
+            },
+            'Write & Edit': {
+                desc: 'Use Claude to draft, edit, and improve written content.',
+                prompt: `Please review and improve this product description for my online store:
+
+"Our bicycle seats are really good. They are comfortable and made from high quality materials. Many customers like them. We use the best leather and padding. The seat fits on any bike. You should buy one because it will make riding more comfortable."
+
+Specific feedback I want:
+1. Clarity: Is it easy to understand?
+2. Tone: Does it sound professional and trustworthy?
+3. Structure: Is it well-organized?
+4. Grammar/style: Any errors or improvements?
+
+Please provide:
+- Specific suggestions for each sentence
+- A rewritten version that sounds premium
+- Overall assessment of the quality`
+            },
+            'Brainstorm Ideas': {
+                desc: 'Generate creative ideas, options, and solutions.',
+                prompt: `I need creative ideas for: How to grow my personal training business from 10 to 50 clients in the next 6 months
+
+Context:
+- Constraints: Limited budget ($2,000/month), small gym space, only me as trainer
+- Goals: Increase revenue by 300% while maintaining quality
+- Timeline: 6 months
+- Budget: $2,000/month for marketing and tools
+
+Please generate:
+1. 5-7 distinct ideas
+2. For each idea: pros, cons, and how to execute
+3. Which idea you'd recommend and why`
+            },
+            'Answer Questions': {
+                desc: 'Get detailed, accurate answers with explanations.',
+                prompt: `I have a question about starting a freelance copywriting business: How much should I charge clients per project?
+
+Context that might help:
+- My background: 5 years of marketing experience, strong writing skills, just starting out as freelancer
+- What I'll do with this: Set my pricing strategy for new clients
+- Level of detail: Intermediate explanation - I want to understand the market and factors that affect pricing
+
+Please provide a clear, thorough answer with:
+1. Direct answer with price ranges for different project types
+2. Why pricing varies and what factors matter
+3. Real examples of how other copywriters price
+4. Relevant risks and how to navigate them`
+            }
+        };
+
+        function initCategories() {
+            const categoryList = document.getElementById('categoryList');
+            let first = true;
+            for (const [title] of Object.entries(tutorials)) {
+                const btn = document.createElement('button');
+                btn.className = `category-btn ${first ? 'active' : ''}`;
+                btn.textContent = title;
+                btn.onclick = () => selectCategory(title, btn);
+                categoryList.appendChild(btn);
+                first = false;
+            }
+            selectCategory(Object.keys(tutorials)[0], document.querySelector('.category-btn'));
+        }
+
+        function selectCategory(title, btn) {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            displayTutorial(title);
+        }
+
+        function displayTutorial(title) {
+            const data = tutorials[title];
+            
+            let html = `
+                <div class="tutorial-title">${title}</div>
+                <div class="tutorial-desc">${data.desc}</div>
+                <div class="prompt-section">
+                    <div class="prompt-label">📋 Example Prompt</div>
+                    <div class="prompt-text">${escapeHtml(data.prompt)}</div>
+                    <div class="button-group">
+                        <button class="copy-btn" onclick="copyPrompt(\`${escapeHtml(data.prompt).replace(/`/g, '\\`')}\`)">📋 Copy</button>
+                        <button class="claude-btn" onclick="openInClaude(\`${escapeHtml(data.prompt).replace(/`/g, '\\`')}\`)">🚀 Open in Claude</button>
+                    </div>
+                    <div class="status-message" id="statusMsg"></div>
+                </div>
+                <div class="tips-box">
+                    <div class="tips-title">💡 Pro Tips</div>
+                    <div class="tip-item">✓ Customize the prompt with your own details</div>
+                    <div class="tip-item">✓ Be specific about what you want</div>
+                    <div class="tip-item">✓ Provide real context and constraints</div>
+                    <div class="tip-item">✓ Specify the output format you need</div>
+                    <div class="tip-item">✓ Ask follow-up questions to refine</div>
+                </div>
+            `;
+            
+            document.getElementById('tutorialDisplay').innerHTML = html;
+        }
+
+        function copyPrompt(prompt) {
+            navigator.clipboard.writeText(prompt).then(() => {
+                showStatus('✓ Prompt copied to clipboard!');
+            });
+        }
+
+        function openInClaude(prompt) {
+            // Copy to clipboard
+            navigator.clipboard.writeText(prompt).then(() => {
+                // Open Claude.ai in new tab
+                window.open('https://claude.ai', '_blank');
+                showStatus('✓ Prompt copied! Opening Claude...');
+            });
+        }
+
+        function showStatus(msg) {
+            const status = document.getElementById('statusMsg');
+            if (status) {
+                status.textContent = msg;
+                status.className = 'status-message show success';
+                setTimeout(() => status.classList.remove('show'), 3000);
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCategories();
+        });
+    </script>
+</body>
+</html>
